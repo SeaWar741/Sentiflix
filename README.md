@@ -1,4 +1,4 @@
-![alt text](./Img/logo.png "Title")
+![alt text](./Img/logo_horizontal.png "Title")
 
 ---
 
