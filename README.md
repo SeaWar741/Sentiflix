@@ -13,4 +13,9 @@
 
 This project utilizes various NL processing techniques and machine learning models to clean, train and predict the models
 
-The general overview is generated using Open AI Chat GPT 3 API
+The general overview is generated using Bard from Google
+
+## **API**
+
+Documentation: https://documenter.getpostman.com/view/15737721/2s9YRGwUKv
+

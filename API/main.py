@@ -8,6 +8,7 @@ import datetime
 from bson import ObjectId
 from functools import wraps
 import simplejson
+from joblib import load
 
 import hashlib, binascii, os
 
@@ -15,16 +16,197 @@ from flask import Flask, jsonify, request
 
 from flask_cors import CORS, cross_origin
 
+from utils.textcleaner import clean_text
+import http.client
+import bardapi
+
+from dotenv import load_dotenv
+import os
+
+# Load the .env file
+load_dotenv()
+
+# Now you can access the variables using os.getenv
+omdb_key = os.getenv("omdb_key")
+tmdb_authorization_header = os.getenv("tmdb_authorization_header")
+token = os.getenv("token")
+
 
 app = Flask(__name__)
 
 
+
+conn = http.client.HTTPSConnection("api.themoviedb.org")
+
 @app.route('/api', methods=['GET'])
 @cross_origin()
 def api():
-    return jsonify({'message': 'Hello, World!'})
+    return jsonify({'result': 'Hello, World!'})
+
+@app.route('/api/trending', methods=['GET'])
+@cross_origin()
+def trending():
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/trending/movie/day", headers=headers)
+    res = conn.getresponse()
+    #save the json response in variable
+    data = res.read()
+    #for altt the backdrop_path append the base url
+    data = json.loads(data)
+    for movie in data["results"]:
+        if movie["backdrop_path"]:
+            movie["backdrop_path"] = "https://image.tmdb.org/t/p/original" + movie["backdrop_path"]
+        if movie["poster_path"]:
+            movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
+
+    
+    return data, 200
 
 
-# Run Server on port 5000
+@app.route('/api/search/<movie_name>', methods=['GET'])
+@cross_origin()
+def search(movie_name):
+    #movie name to string
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/search/movie?query=" + movie_name, headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    #for altt the backdrop_path append the base url
+    data = json.loads(data)
+    for movie in data["results"]:
+        if movie["backdrop_path"]:
+            movie["backdrop_path"] = "https://image.tmdb.org/t/p/original" + movie["backdrop_path"]
+        if movie["poster_path"]:
+            movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
+
+
+    return data, 200
+
+@app.route('/api/movie/<movie_id>', methods=['GET'])
+@cross_origin()
+def movie(movie_id):
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/movie/" + movie_id + "?append_to_response=reviews", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    #for the backdrop_path append the base url
+    data = json.loads(data)
+    data["backdrop_path"] = "https://image.tmdb.org/t/p/original" + data["backdrop_path"]
+    data["poster_path"] = "https://image.tmdb.org/t/p/original" + data["poster_path"]
+    #production companies logos
+    for company in data["production_companies"]:
+        if company["logo_path"]:
+            company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
+    return data, 200
+
+@app.route('/api/random', methods=['GET'])
+@cross_origin()
+def random():
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/discover/movie?sort_by=popularity.desc&include_adult=false&include_video=false&page=1", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    #for altt the backdrop_path append the base url
+    data = json.loads(data)
+    for movie in data["results"]:
+        if movie["backdrop_path"]:
+            movie["backdrop_path"] = "https://image.tmdb.org/t/p/original" + movie["backdrop_path"]
+        if movie["poster_path"]:
+            movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
+
+            #production companies logos
+            for company in movie["production_companies"]:
+                if company["logo_path"]:
+                    company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
+    return data, 200
+
+@app.route('/api/classify/<movie_id>', methods=['GET'])
+@cross_origin()
+def get_sentiment(movie_id):
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/movie/" + movie_id + "?append_to_response=reviews", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    data = json.loads(data)
+    reviews = data["reviews"]["results"]
+    reviews = [clean_text(review["content"]) for review in reviews]
+
+    #vectorize the reviews
+    from sklearn.feature_extraction.text import CountVectorizer
+    #vectorize the reviews
+
+    vectorizer = load('vectorizer.joblib')
+
+    reviews = vectorizer.transform(reviews)
+
+    import pickle
+    filename = 'LogisticRegressionModel.sav'
+    loaded_model = pickle.load(open(filename, 'rb'))
+    sentiment = loaded_model.predict(reviews)
+    positive = 0
+    negative = 0
+    for i in sentiment:
+        if i == 1:
+            positive += 1
+        else:
+            negative += 1
+    if positive > negative:
+        return jsonify({'result': 'Good Movie'}), 200
+    else:
+        return jsonify({'result': 'Bad Movie'}), 400
+    
+
+@app.route('/api/generate_review/<movie_id>', methods=['GET'])
+@cross_origin()
+def generate_review(movie_id):
+    # Fetch existing reviews for the movie
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/movie/" + movie_id + "?append_to_response=reviews", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    data = json.loads(data)
+    reviews = data["reviews"]["results"]
+    
+    # Combine the reviews to form a prompt for ChatGPT
+    combined_reviews = " ".join([review["content"] for review in reviews])
+    
+    # Generate a review using bard
+    query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a parragraph):"
+    result = bardapi.core.Bard(token).get_answer(query_string)
+
+    #get the first choice
+    result = result["choices"][0]["content"]
+
+    #result to string
+    result = str(result[0])
+
+
+
+    #remove * symbol
+    result = result.replace("*", "")
+
+
+    return jsonify({'result': result}), 200
+
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0', debug=True)
