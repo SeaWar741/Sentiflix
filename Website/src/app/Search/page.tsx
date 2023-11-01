@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 const Search: React.FC = () => {
   const [query, setQuery] = useState<string>('');
@@ -17,23 +19,35 @@ const Search: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Search for a Movie</h1>
-      <input
-        type="text"
-        placeholder="Enter movie name..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <button onClick={handleSearch}>Search</button>
+    <>
+      <div className='flex justify-center mt-8'>
+        <Link href="/">
+          <Image
+          src="/logo_horizontal.png"
+          width={500}
+          height={500}
+          alt="Sentflix Logo"
+          />
+        </Link>
+      </div>
+      <div className='flex justify-center mt-8'>
+        <h1>Search for a Movie</h1>
+        <input
+          type="text"
+          placeholder="Enter movie name..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
 
-      {movie && (
-        <div>
-          <img src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`} alt={movie.title} />
-          <p>{movie.title}</p>
-        </div>
-      )}
-    </div>
+        {movie && (
+          <div>
+            <img src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`} alt={movie.title} />
+            <p>{movie.title}</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

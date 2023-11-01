@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const Movies: React.FC = () => {
   const [movies, setMovies] = useState<any[]>([]);
@@ -21,16 +22,28 @@ const Movies: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Movie List</h1>
-      <ul>
-        {movies.map(movie => (
-          <li key={movie.id}>
-            <Link href={`/movie/${movie.id}`}>{movie.title}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <div className='flex justify-center mt-8'>
+        <Link href="/">
+          <Image
+          src="/logo_horizontal.png"
+          width={500}
+          height={500}
+          alt="Sentflix Logo"
+          />
+        </Link>
+      </div>
+      <div className='flex justify-center mt-8'>
+        <h1>Movie List</h1>
+        <ul>
+          {movies.map(movie => (
+            <li key={movie.id}>
+              <Link href={`/movie/${movie.id}`}>{movie.title}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 };
 
