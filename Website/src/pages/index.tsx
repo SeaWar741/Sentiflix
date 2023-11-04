@@ -1,11 +1,15 @@
-"use client";
-
+import Image from "next/image";
+import { Inter } from "next/font/google";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import MovieCard from "../../components/moviecard";
 
-export default function Center({ movieData }) {
+const inter = Inter({ subsets: ["latin"] });
+
+export default function Home({ movies }) {
   const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
+  const currentMovie = movies.results[currentMovieIndex];
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -15,9 +19,9 @@ export default function Center({ movieData }) {
           let newIndex;
           do {
             newIndex = Math.floor(
-              Math.random() * (movieData?.results.length || 1)
+              Math.random() * (movies?.results.length || 1)
             );
-          } while (newIndex === prevIndex && movieData?.results.length > 1);
+          } while (newIndex === prevIndex && movies?.results.length > 1);
           return newIndex;
         });
         setIsFading(false);
@@ -25,10 +29,7 @@ export default function Center({ movieData }) {
     }, 10000);
 
     return () => clearInterval(intervalId);
-  }, [movieData]);
-
-  const currentMovie = movieData.results[currentMovieIndex];
-  const lmao = () => redirect(`/film/${currentMovie.id}`);
+  }, [movies]);
 
   return (
     <>
@@ -55,6 +56,27 @@ export default function Center({ movieData }) {
           </button>
         </Link>
       </div>
+      <div className="absolute w-full h-68 bottom-0 bg-gradient-to-t from-black from-1% via-black to-100%">
+        <h2 className="pl-14 font-bold text-xl">Trending</h2>
+
+        <div className="w-full h-52 items-center flex flex-grow overflow-x-auto">
+          <div className="w-full h-40 flex bg-red flex-row space-x-4 first:pl-14">
+            {movies.results.map((movie, i) => (
+              <MovieCard ind={i} movie={movie} />
+            ))}
+          </div>
+        </div>
+      </div>
     </>
   );
+}
+
+export async function getServerSideProps({ context }) {
+  const res = await fetch(`http://127.0.0.1:5001/api/trending`);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error("Failed to fetch data");
+  }
+
+  return { props: { movies: data } };
 }
