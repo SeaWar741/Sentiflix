@@ -141,6 +141,36 @@ def movie(movie_id):
             company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
     return data, 200
 
+@app.route('/api/trailer/<movie_id>', methods=['GET'])
+@cross_origin()
+def getTrailer(movie_id):
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    conn.request("GET", "/3/movie/" + movie_id + "/videos?language=en-US", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+
+    #only return the ones with type trailer
+    data = json.loads(data)
+    data["results"] = [trailer for trailer in data["results"] if trailer["type"] == "Trailer"]
+
+    trailers = []
+
+    for trailer in data["results"]:
+        #get the youtube key and append it to the youtube url
+        youtube_key = trailer["key"]
+        youtube_url = "https://www.youtube.com/watch?v=" + youtube_key
+        trailers.append(youtube_url)
+
+    #if there are no trailers
+    if len(data["results"]) == 0:
+        return jsonify({'result': []}), 400
+
+    #return a json with the trailers
+    return jsonify({'result': trailers}), 200
+
 @app.route('/api/random', methods=['GET'])
 @cross_origin()
 def random():
