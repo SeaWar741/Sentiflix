@@ -72,7 +72,7 @@ export default function Home({ movies }) {
 }
 
 export async function getServerSideProps({ context }) {
-  const res = await fetch(`http://127.0.0.1:5001/api/trending`);
+  const res = await fetch(`http://127.0.0.1:5000/api/trending`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error("Failed to fetch data");

@@ -79,10 +79,10 @@ export default function Page({ currentMovieData, currentMovieClassif }) {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const reqString = "http://127.0.0.1:5001/api/random";
+  const reqString = "http://127.0.0.1:5000/api/random";
   const currentMovie = await fetch(reqString);
 
-  const reqStringTwo = `http://127.0.0.1:5001/api/classify/${currentMovie.id}`;
+  const reqStringTwo = `http://127.0.0.1:5000/api/classify/${currentMovie.id}`;
   const classif = await fetch(reqStringTwo);
 
   if (!currentMovie.ok) {

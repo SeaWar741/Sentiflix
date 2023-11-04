@@ -21,7 +21,9 @@ import http.client
 import bardapi
 
 from dotenv import load_dotenv
+from sklearn.feature_extraction.text import CountVectorizer
 import os
+import pickle
 
 # Load the .env file
 load_dotenv()
@@ -144,17 +146,20 @@ def get_sentiment(movie_id):
     data = res.read()
     data = json.loads(data)
     reviews = data["reviews"]["results"]
+    
     reviews = [clean_text(review["content"]) for review in reviews]
 
-    #vectorize the reviews
-    from sklearn.feature_extraction.text import CountVectorizer
+    #if there are no reviews
+    if len(reviews) == 0:
+        return jsonify({'result': 'No reviews found'}), 400
+
     #vectorize the reviews
 
     vectorizer = load('vectorizer.joblib')
 
     reviews = vectorizer.transform(reviews)
 
-    import pickle
+
     filename = 'LogisticRegressionModel.sav'
     loaded_model = pickle.load(open(filename, 'rb'))
     sentiment = loaded_model.predict(reviews)
@@ -190,18 +195,21 @@ def generate_review(movie_id):
     
     # Generate a review using bard
     query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a parragraph):"
-    result = bardapi.core.Bard(token).get_answer(query_string)
-
-    #get the first choice
-    result = result["choices"][0]["content"]
-
-    #result to string
-    result = str(result[0])
 
 
+    try:
+        #result = bardapi.core.Bard(token).get_answer(query_string)
 
-    #remove * symbol
-    result = result.replace("*", "")
+        #get the first choice
+        result = result["choices"][0]["content"]
+
+        #result to string
+        result = str(result[0])
+
+        #remove * symbol
+        result = result.replace("*", "")
+    except:
+        result = "Sorry, I couldn't generate a review for this movie."
 
 
     return jsonify({'result': result}), 200

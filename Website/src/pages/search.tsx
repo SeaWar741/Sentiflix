@@ -37,7 +37,7 @@ export default function Page({ movies }) {
   const searchMovie = async () => {
     if (search == "") return;
     let encodedStr = search.replace(/ /g, "&");
-    const reqString = `http://127.0.0.1:5001/api/search/${encodedStr}`;
+    const reqString = `http://127.0.0.1:5000/api/search/${encodedStr}`;
     console.log(reqString);
 
     const currentMovie = await fetch(reqString);
@@ -88,7 +88,7 @@ export default function Page({ movies }) {
 }
 
 export async function getServerSideProps({ context }) {
-  const res = await fetch(`http://127.0.0.1:5001/api/trending`);
+  const res = await fetch(`http://127.0.0.1:5000/api/trending`);
   const data = await res.json();
   if (!res.ok) {
     throw new Error("Failed to fetch data");
