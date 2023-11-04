@@ -84,6 +84,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {/*Add more sections like trending*/}
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import ReactPlayer from 'react-player'
+import ReactPlayer from 'react-player';
 
 export default function Page() {
   const [currentMovieData, setCurrentMovieData] = useState(null);

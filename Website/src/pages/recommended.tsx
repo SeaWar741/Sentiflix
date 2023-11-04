@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import ReactPlayer from 'react-player'
 
 export default function Page() {
   const [currentMovieData, setCurrentMovieData] = useState(null);
   const [currentMovieClassif, setCurrentMovieClassif] = useState(null);
   const [currentMovieReview, setCurrentMovieReview] = useState(null);
+  const [currentMovieTrailers, setCurrentMovieTrailers] = useState({result:[]});
 
   useEffect(() => {
     async function fetchData() {
@@ -23,6 +25,8 @@ export default function Page() {
         const movieResponse = await fetch(`http://127.0.0.1:5000/api/movie/${movieId}`);
         const classifResponse = await fetch(`http://127.0.0.1:5000/api/classify/${movieId}`);
         const reviewResponse = await fetch(`http://127.0.0.1:5000/api/generate_review/${movieId}`);
+        const trailerResponse = await fetch(`http://127.0.1:5000/api/trailer/${movieId}`);
+
   
         //check each response for errors isolate the error and display it
         if (!movieResponse.ok) {
@@ -34,14 +38,19 @@ export default function Page() {
         if (!reviewResponse.ok) {
           console.log(reviewResponse.statusText);
         }
+        if (!trailerResponse.ok) {
+          console.log(trailerResponse.statusText);
+        }
   
         const movieDetails = await movieResponse.json();
         const classifData = await classifResponse.json();
         const reviewData = await reviewResponse.json();
+        const trailerData = await trailerResponse.json();
   
         setCurrentMovieData(movieDetails);
         setCurrentMovieClassif(classifData);
         setCurrentMovieReview(reviewData);
+        setCurrentMovieTrailers(trailerData);
       } catch (error) {
         console.error("Error fetching movie data:", error);
         // Handle the error state in the UI as needed
@@ -153,6 +162,23 @@ export default function Page() {
                   </div>
                 );
               })}
+              <div>
+                {/*if trailer is not empty put the first video */}
+                {currentMovieTrailers.result.length > 0 && (
+                  <div>
+                    <h2 className="mt-10 text-md font-bold uppercase">
+                      Trailer
+                    </h2>
+                    <div className="flex justify-center">
+                      <ReactPlayer
+                        className="w-3/4 h-2/4"
+                        url={`https://www.youtube.com/watch?v=${currentMovieTrailers.result[0]}`}
+                        controls={true}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="w-1/4 sticky top-10 h-10">
