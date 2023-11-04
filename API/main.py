@@ -116,6 +116,9 @@ def search(movie_name):
     # Prepend the exact matches to the sorted list
     data["results"] = exact_matches + data["results"]
 
+    # remove movies with no backdrop
+    data["results"] = [movie for movie in data["results"] if movie["backdrop_path"]]
+
     return data, 200
 
 @app.route('/api/movie/<movie_id>', methods=['GET'])

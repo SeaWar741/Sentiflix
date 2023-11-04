@@ -2,6 +2,8 @@
 
 ---
 
+![alt text](./Img/preview.png "Preview")
+
 # **Sentiflix:** *Sentiment analysis based movie platform*
 
 ## **Sections:**
