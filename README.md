@@ -1,10 +1,10 @@
 ![alt text](./Img/logo_horizontal.png "Title")
 
 ---
+# **Sentiflix:** *Sentiment analysis based movie platform*
 
 ![alt text](./Img/preview.png "Preview")
 
-# **Sentiflix:** *Sentiment analysis based movie platform*
 
 ## **Sections:**
 - API: Flask based API
