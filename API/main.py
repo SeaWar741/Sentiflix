@@ -24,6 +24,7 @@ from dotenv import load_dotenv
 from sklearn.feature_extraction.text import CountVectorizer
 import os
 import pickle
+from collections import Counter
 
 # Load the .env file
 load_dotenv()
@@ -72,11 +73,18 @@ def trending():
 @cross_origin()
 def search(movie_name):
     #movie name to string
+
+    #replace _ with %20
+    movie_name = movie_name.replace("_", "%20")
+    #set to lowercase
+    movie_name = movie_name.lower()
+
+
     headers = {
         'Authorization': 'Bearer ' + tmdb_authorization_header,
         'accept': 'application/json'
     }
-    conn.request("GET", "/3/search/movie?query=" + movie_name, headers=headers)
+    conn.request("GET", "/3/search/movie?query=" + movie_name +"&include_adult=false&language=en-US&page=1'", headers=headers)
     res = conn.getresponse()
     data = res.read()
     #for altt the backdrop_path append the base url
@@ -86,7 +94,27 @@ def search(movie_name):
             movie["backdrop_path"] = "https://image.tmdb.org/t/p/original" + movie["backdrop_path"]
         if movie["poster_path"]:
             movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
+    
+    # Split the search term into words and create a counter for them
+    search_words = Counter(movie_name.lower().split())
 
+    # First, find if there is an exact match
+    exact_matches = [movie for movie in data["results"] if movie["original_title"].lower() == movie_name.lower()]
+    # Remove exact matches from the original list
+    data["results"] = [movie for movie in data["results"] if movie not in exact_matches]
+
+    def sort_key(movie):
+        title_words = Counter(movie["original_title"].lower().split())
+        # Count how many search words are in the movie title
+        match_count = sum((title_words & search_words).values())
+        # Return a tuple that will sort by match count, then alphabetically
+        return (-match_count, movie["original_title"].lower())
+
+    # Sort the movies based on the custom sort key
+    data["results"].sort(key=sort_key)
+
+    # Prepend the exact matches to the sorted list
+    data["results"] = exact_matches + data["results"]
 
     return data, 200
 
@@ -128,10 +156,13 @@ def random():
         if movie["poster_path"]:
             movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
 
-            #production companies logos
-            for company in movie["production_companies"]:
-                if company["logo_path"]:
-                    company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
+            try:
+                #production companies logos
+                for company in movie["production_companies"]:
+                    if company["logo_path"]:
+                        company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
+            except:
+                pass
     return data, 200
 
 @app.route('/api/classify/<movie_id>', methods=['GET'])
@@ -188,16 +219,17 @@ def generate_review(movie_id):
     res = conn.getresponse()
     data = res.read()
     data = json.loads(data)
-    reviews = data["reviews"]["results"]
-    
-    # Combine the reviews to form a prompt for ChatGPT
-    combined_reviews = " ".join([review["content"] for review in reviews])
-    
-    # Generate a review using bard
-    query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a parragraph):"
-
-
     try:
+        reviews = data["reviews"]["results"]
+        
+        # Combine the reviews to form a prompt for ChatGPT
+        combined_reviews = " ".join([review["content"] for review in reviews])
+        
+        # Generate a review using bard
+        query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a parragraph):"
+
+
+    
         #result = bardapi.core.Bard(token).get_answer(query_string)
 
         #get the first choice

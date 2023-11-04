@@ -13,7 +13,7 @@ export default function Page() {
       try {
         const movieResponse = await fetch(`http://127.0.0.1:5000/api/movie/${slug}`);
         const classifResponse = await fetch(`http://127.0.0.1:5000/api/classify/${slug}`);
-        const review = await fetch(`http://127.0.0.1:5000/api/generate_review/${slug}`);
+        const reviewResponse = await fetch(`http://127.0.0.1:5000/api/generate_review/${slug}`);
 
         //check each response for errors isolate the error and display it
         if (!movieResponse.ok) {
@@ -22,13 +22,13 @@ export default function Page() {
         if (!classifResponse.ok) {
           console.log(classifResponse.statusText);
         }
-        if (!review.ok) {
-          console.log(review.statusText);
+        if (!reviewResponse.ok) {
+          console.log(reviewResponse.statusText);
         }
 
         const movieData = await movieResponse.json();
         const classifData = await classifResponse.json();
-        const reviewData = await review.json();
+        const reviewData = await reviewResponse.json();
 
         setCurrentMovieData(movieData);
         setCurrentMovieClassif(classifData);

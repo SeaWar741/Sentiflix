@@ -36,7 +36,10 @@ export default function Page({ movies }) {
 
   const searchMovie = async () => {
     if (search == "") return;
-    let encodedStr = search.replace(/ /g, "&");
+    
+    //replace spaces with _
+    const encodedStr = search.replace(/ /g, "_");
+
     const reqString = `http://127.0.0.1:5000/api/search/${encodedStr}`;
     console.log(reqString);
 
@@ -58,7 +61,7 @@ export default function Page({ movies }) {
         <div className=" w-full flex flex-row justify-center">
           <div className="mt-6 flex w-2/3 gap-x-4  flex-row justify-center">
             <input
-              placeholder="Titulo de pelicula..."
+              placeholder="Movie title..."
               onChange={(evt) => setSearch(evt.target.value)}
               className="min-w-0 flex-auto rounded-md border-0 bg-white/5 px-3.5 py-2 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
             />
@@ -67,7 +70,7 @@ export default function Page({ movies }) {
               onClick={searchMovie}
               className="flex-none rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
             >
-              Buscar
+              Search
             </button>
           </div>
         </div>
