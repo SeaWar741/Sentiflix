@@ -34,12 +34,16 @@ omdb_key = os.getenv("omdb_key")
 tmdb_authorization_header = os.getenv("tmdb_authorization_header")
 token = os.getenv("token")
 
+#Initialize Flask App
 
 app = Flask(__name__)
 
-
+#Setup HTTPS connection for API for calls
 
 conn = http.client.HTTPSConnection("api.themoviedb.org")
+
+
+#Main Route for API
 
 @app.route('/api', methods=['GET'])
 @cross_origin()
