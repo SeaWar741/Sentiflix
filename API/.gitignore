@@ -1,0 +1,22 @@
+# .gitignore
+
+# Ignore .env file
+.env
+
+# Python specific ignores
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE specific ignores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific ignores
+.DS_Store
+Thumbs.db
