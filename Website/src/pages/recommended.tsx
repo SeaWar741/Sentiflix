@@ -61,7 +61,7 @@ export default function Page() {
         <meta name="msapplication-TileColor" content="#da532c"/>
         <meta name="theme-color" content="#000000"/>
       </Head>
-      <div className="absolute w-full h-68 bottom-0 bg-gradient-to-t from-black from-1% via-black to-100%">
+      <div className="absolute w-full h-68 mt-24 bg-gradient-to-t from-black from-1% via-black to-100%">
         <h2 className="pl-14 font-bold text-xl">Top-rated movies</h2>
         <div className="w-full h-52 items-center flex flex-grow overflow-x-auto">
           <div className="w-full h-40 flex bg-red flex-row space-x-4 first:pl-14">
