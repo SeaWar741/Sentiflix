@@ -283,7 +283,35 @@ def generate_review(movie_id):
 
     return jsonify({'result': result}), 200
 
+@app.route('/api/top_rated', methods=['GET'])
+@cross_origin()
+def top_rated():
+    headers = {
+        'Authorization': 'Bearer ' + tmdb_authorization_header,
+        'accept': 'application/json'
+    }
+    # Here you can add additional parameters as needed, such as `language` or `page`
+    conn.request("GET", "/3/movie/top_rated?language=en-US&page=1", headers=headers)
+    res = conn.getresponse()
+    data = res.read()
+    data = json.loads(data)
+    
+    # Process the movie paths like you've done in the other routes
+    for movie in data["results"]:
+        if movie["backdrop_path"]:
+            movie["backdrop_path"] = "https://image.tmdb.org/t/p/original" + movie["backdrop_path"]
+        if movie["poster_path"]:
+            movie["poster_path"] = "https://image.tmdb.org/t/p/original" + movie["poster_path"]
 
+        try:
+            # Production companies logos
+            for company in movie["production_companies"]:
+                if company["logo_path"]:
+                    company["logo_path"] = "https://image.tmdb.org/t/p/original" + company["logo_path"]
+        except KeyError:
+            pass  # In case there is no 'production_companies' key in the movie dictionary
+
+    return jsonify(data), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

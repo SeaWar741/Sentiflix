@@ -12,22 +12,27 @@ export default function Page() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Assuming the endpoint for the sorted list by rating is `/api/movies/rated`
-        const movieRes = await fetch("http://127.0.0.1:5000/api/top_rated");
-        if (!movieRes.ok) throw new Error("Failed to fetch movies data");
+        const movieRes = await fetch("http://127.0.0.1:5000/api/random");
+        if (!movieRes.ok) throw new Error("Failed to fetch movie data");
         const movieData = await movieRes.json();
 
-        // You might not need to pick a random movie anymore, just select the top one or any other logic you have in mind
-        const topRatedMovie = movieData.results[0]; // for example, taking the first one
-        const movieId = topRatedMovie.id.toString();
+        //random int from 0 to 19
+        const randomIndex = Math.floor(Math.random() * 20);
+      
+        // Fetch additional data using the movieId, set to string
+        const movieId = movieData.results[randomIndex].id.toString();
 
-        // ... (Other fetch requests remain unchanged)
+
+        const movieResponse = await fetch(`http://127.0.0.1:5000/api/movie/${movieId}`);
         const classifResponse = await fetch(`http://127.0.0.1:5000/api/classify/${movieId}`);
         const reviewResponse = await fetch(`http://127.0.0.1:5000/api/generate_review/${movieId}`);
         const trailerResponse = await fetch(`http://127.0.1:5000/api/trailer/${movieId}`);
 
   
         //check each response for errors isolate the error and display it
+        if (!movieResponse.ok) {
+          console.log(movieResponse.statusText);
+        }
         if (!classifResponse.ok) {
           console.log(classifResponse.statusText);
         }
@@ -38,19 +43,17 @@ export default function Page() {
           console.log(trailerResponse.statusText);
         }
   
+        const movieDetails = await movieResponse.json();
         const classifData = await classifResponse.json();
         const reviewData = await reviewResponse.json();
         const trailerData = await trailerResponse.json();
-
-        // If all fetch requests are successful, set state with the new data
-        setCurrentMovieData(topRatedMovie);
-        // ... (Other state setters remain unchanged)
+  
+        setCurrentMovieData(movieDetails);
         setCurrentMovieClassif(classifData);
         setCurrentMovieReview(reviewData);
         setCurrentMovieTrailers(trailerData);
-        
       } catch (error) {
-        console.error("Error fetching movies data:", error);
+        console.error("Error fetching movie data:", error);
         // Handle the error state in the UI as needed
       }
     }

@@ -46,8 +46,13 @@ export default function Navbar({ activeTab }: { activeTab: string }) {
           </li>
         </ul>
       </div>
-      <div>
-        <ul>
+      <div className="flex flex-row items-center">
+        <ul className="flex flex-grow space-x-6 mx-10 text-sm">
+          <a href="/random">
+            <li className="flex cursor-pointer flex-grow space-x-2 text-sm">
+              <div>Surprise Me!</div>
+            </li>
+          </a>
           <a href="/search">
             <li className="flex cursor-pointer flex-grow space-x-2 text-sm">
               <div>Search</div>
