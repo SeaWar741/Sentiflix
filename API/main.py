@@ -9,6 +9,7 @@ from bson import ObjectId
 from functools import wraps
 import simplejson
 from joblib import load
+import openai 
 
 import hashlib, binascii, os
 
@@ -33,6 +34,7 @@ load_dotenv()
 omdb_key = os.getenv("omdb_key")
 tmdb_authorization_header = os.getenv("tmdb_authorization_header")
 token = os.getenv("token")
+openai.api_key = os.getenv("chatgpt")
 
 #Initialize Flask App
 
@@ -248,6 +250,7 @@ def get_sentiment(movie_id):
 @cross_origin()
 def generate_review(movie_id):
     # Fetch existing reviews for the movie
+    conn = http.client.HTTPSConnection("api.themoviedb.org")
     headers = {
         'Authorization': 'Bearer ' + tmdb_authorization_header,
         'accept': 'application/json'
@@ -262,26 +265,25 @@ def generate_review(movie_id):
         # Combine the reviews to form a prompt for ChatGPT
         combined_reviews = " ".join([review["content"] for review in reviews])
         
-        # Generate a review using bard
-        query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a parragraph):"
+        # Generate a review using OpenAI
+        query_string = "Generate a review for " + data["title"] + " movie based on the following reviews: " + combined_reviews + " Write a concise review (only a paragraph):"
 
+        # Get the response from OpenAI
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # Use the appropriate model
+            messages=[
+                {"role":"user","content": query_string}
+            ]
+        )
 
-    
-        #result = bardapi.core.Bard(token).get_answer(query_string)
+        # Extract the content from the response
+        result = response["choices"][0]["message"]["content"]
 
-        #get the first choice
-        result = result["choices"][0]["content"]
-
-        #result to string
-        result = str(result[0])
-
-        #remove * symbol
-        result = result.replace("*", "")
-    except:
-        result = "Sorry, I couldn't generate a review for this movie."
-
+    except Exception as e:
+        result = "Sorry, I couldn't generate a review for this movie. Error: " + str(e)
 
     return jsonify({'result': result}), 200
+
 
 
 

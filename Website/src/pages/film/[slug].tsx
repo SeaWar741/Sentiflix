@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import ReactPlayer from 'react-player';
 import Head from 'next/head';
+import PopcornLoader from '../PopcornLoader';
 
 export default function Page() {
   const [currentMovieData, setCurrentMovieData] = useState(null);
@@ -94,7 +95,7 @@ export default function Page() {
   }
 
   if (!currentMovieData || !currentMovieClassif) {
-    return <div>Loading...</div>; // Or some other loading indicator
+    return <div><PopcornLoader /></div>; // Or some other loading indicator
   }
 
   return (

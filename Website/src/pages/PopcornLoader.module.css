@@ -1,0 +1,45 @@
+/* PopcornLoader.module.css */
+.popcorn {
+  margin: auto;
+  position: absolute;
+  width: 85px;
+  top: 30%;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.mypopcorn {
+  padding: 20px;
+}
+
+.popcrncircle {
+  fill: #FFE477;
+  transform-origin: 50% 50%;
+  animation: rotate 1.5s cubic-bezier(.49, .05, .32, 1.04) infinite alternate;
+}
+
+@keyframes rotate {
+  50% {
+    transform: translate(0px, 100px);
+  }
+}
+
+.popcrntext {
+  fill: #FFE477;
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: textFade 2.5s cubic-bezier(.49, .05, .32, 1.04) infinite alternate;
+}
+
+@keyframes textFade {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
